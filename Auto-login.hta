@@ -8,7 +8,7 @@
 	 border="thin"
 	 maximizeButton="no"
 	 minimizeButton="yes"
-	 version ="1.0" >
+	 version ="1.1" >
 
 
 </head>
@@ -196,29 +196,28 @@
     End Function
 
     Sub Cisco
-		txt ="REMOTE-ACCESS"
 		oshell.AppActivate(""&ipaddress.value&" - PuTTY")
-		oshell.sendkeys"sh run | i "&txt&""
+		oshell.sendkeys"sh run | i +(remote)-+(access)"
 		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"sh run | i snmp-server location"
-		oshell.sendkeys"{ENTER}"
+		'oshell.sendkeys"sh run | i snmp-server location"
+		'oshell.sendkeys"{ENTER}"
 		oshell.sendkeys"sh run | i snmp-server community"
 		oshell.sendkeys"{ENTER}"
 		oshell.sendkeys"sh run | i snmp-server view restricted"
 		oshell.sendkeys"{ENTER}"
 		oshell.sendkeys"sh run | i access-list 52"
 		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"sh ethernet cfm MAINTENANCE-POINTS remote"
+		oshell.sendkeys"sh ethernet cfm maintenance-points remote"
 		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"sh ethernet cfm MAINTENANCE-POINTS local"
+		oshell.sendkeys"sh ethernet cfm maintenance-points local"
 		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"sh int desc | i up"
+		oshell.sendkeys"sh int desc | ex admin"
 		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"sh cdp nei"
+		oshell.sendkeys"sh cdp nei de | i Device ID:|IP address:|(outgoing port)"
 		oshell.sendkeys"{ENTER}"
 		oshell.sendkeys"sh version | i Base"
 		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"sh ip sla stat"
+		oshell.sendkeys"sh ip sla config"
 		oshell.sendkeys"{ENTER}"
 		oshell.sendkeys" "
 		oshell.sendkeys" "
@@ -287,5 +286,5 @@ Active Directory Password<BR>
 <input type="radio" name="RadioOption" value="none" checked>Just Login<BR>
 <div style="position:relative;left:0px;top:5px;"><input type="button" value="Run Putty" name="run_button" onClick="check">
 <div style="position:relative;left:155px;top:-35px;"><BR>
-<font size="2">� KAsp3rd</size>
+<font size="2">© KAsp3rd</size>
 </body>
