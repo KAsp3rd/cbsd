@@ -199,8 +199,8 @@
 		oshell.AppActivate(""&ipaddress.value&" - PuTTY")
 		oshell.sendkeys"sh run | i +(remote)-+(access)"
 		oshell.sendkeys"{ENTER}"
-		'oshell.sendkeys"sh run | i snmp-server location"
-		'oshell.sendkeys"{ENTER}"
+		oshell.sendkeys"sh run | i snmp-server location"
+		oshell.sendkeys"{ENTER}"
 		oshell.sendkeys"sh run | i snmp-server community"
 		oshell.sendkeys"{ENTER}"
 		oshell.sendkeys"sh run | i snmp-server view restricted"
