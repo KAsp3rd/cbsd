@@ -8,7 +8,7 @@
 	 border="thin"
 	 maximizeButton="no"
 	 minimizeButton="yes"
-	 version ="1.1" >
+	 version ="1.2" >
 
 
 </head>
@@ -20,6 +20,7 @@
 	dim oshell
 	dim objFSO
 	dim objNetwork
+    dim sshpass
 
 	Set objFSO = CreateObject("Scripting.FileSystemObject")
 	Set oshell = CreateObject("Wscript.shell")
@@ -41,11 +42,25 @@
 	End Sub
 
 	Sub check
+		sshpass = Passwd.value
 		If Passwd.value = "" Then
 			msgbox "Please Enter your password in the space provided.", 48, "Error"
 			Exit Sub
         End If
-
+		'replace characters that SendKeys uses as events with absolute characters
+		If InStr(Passwd.value,"^")>0 Then
+		    Passwd.value=(Replace(Passwd.value,"^","{^}"))
+        End If
+		If InStr(Passwd.value,"~")>0 Then
+		    Passwd.value=(Replace(Passwd.value,"~","{~}"))
+        End If
+		If InStr(Passwd.value,"+")>0 Then
+		    Passwd.value=(Replace(Passwd.value,"+","{+}"))
+        End If
+		If InStr(Passwd.value,"%")>0 Then
+		    Passwd.value=(Replace(Passwd.value,"%","{%}"))
+        End If
+		
 		'trim empty spaces from user entry of IP Address
 		strIP = Trim(ipaddress.value)
 		aIP = Split(strIP, ".")
@@ -153,7 +168,7 @@
 	End Sub
 	
 	Sub init_ssh
-		oshell.run "C:\PROGRA~1\PuTTY\putty.exe -ssh "&objNetwork.UserName&"@"&ipaddress.value&" -pw "&Passwd.value&""
+		oshell.run "C:\PROGRA~1\PuTTY\putty.exe -ssh "&objNetwork.UserName&"@"&ipaddress.value&" -pw "&sshpass&""
 		Delay
 	End Sub
 
@@ -276,9 +291,9 @@
 IP Address to connect to<BR>
 <input type="text" onkeypress=enter onClick=cleartxt value="xxx.xxx.xxx.xxx" name="ipaddress" size="30"><BR>
 Active Directory Password<BR>
-<input type="password" name="Passwd" size="30"> <BR>
-<input type="radio" name="RadioOption" value="Cisco">Cisco
-<div style="position:relative;left:140px;top:-18px;"><select size="1" name="OptionChooser">
+<input type="password" onkeypress=enter name="Passwd" size="30"> <BR>
+<input type="radio" onkeypress=enter name="RadioOption" value="Cisco">Cisco
+<div style="position:relative;left:140px;top:-18px;"><select size="1" onkeypress=enter name="OptionChooser">
 <option value="1">Telnet</option>
 <option value="2">SSH</option>
 </select><BR></div>
