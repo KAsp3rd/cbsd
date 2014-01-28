@@ -1,336 +1,329 @@
 <head>
-<title>Automation</title>
+<title>KAsp3rd</title>
 <HTA:APPLICATION 
-     APPLICATIONNAME="Automagical Login"
-     SCROLL="no"
-     SINGLEINSTANCE="yes"
-	 innerBorder="no"
-	 border="thin"
-	 maximizeButton="no"
-	 minimizeButton="yes"
-	 version ="1.4" >
+    APPLICATIONNAME="NCE Testing"
+    SCROLL="no"
+    SINGLEINSTANCE="yes"
+    innerBorder="no"
+    border="thin"
+    maximizeButton="no"
+    minimizeButton="yes"
+    version ="2.2" >
 
 
 </head>
    
   <script language="VBScript">
-        dim device
-	dim intLeft
-	dim intTop
-	dim oshell
-	dim objFSO
-	dim objNetwork
-        dim sshpass
-	dim temppass
-        dim xmlhttp
+    dim device
+    dim intLeft
+    dim intTop
+    dim oshell
+    dim objFSO
+    dim objNetwork
+    dim sshpass
+    dim temppass
+    dim strIP
+    dim appdata
+    dim txColor
+    dim bColor
+    dim hMenu
 
-	Set xmlhttp = CreateObject("MSXML2.ServerXMLHTTP")
-	Set objFSO = CreateObject("Scripting.FileSystemObject")
-	Set oshell = CreateObject("Wscript.shell")
-	Set objNetwork = CreateObject("WScript.Network")
+    Set objFSO = CreateObject("Scripting.FileSystemObject")
+    Set oshell = CreateObject("Wscript.shell")
+    Set objNetwork = CreateObject("WScript.Network")
+    Set objOption = Document.createElement("OPTION")
+    appdata = oshell.ExpandEnvironmentStrings("%APPDATA%")
+    appdata = ""&appdata&"\nce_script.ini"
+    hMenu = 0
+    
+    Sub cleartxt
+        ipaddress.value = ""
+    End Sub
 
-	Sub cleartxt
-	    ipaddress.value = ""
-	End Sub
+    Sub enter
+        With document.parentWindow.event
+            If .keycode = 13 then
+                check
+            Else
+                .cancelbubble = false
+                .returnvalue = true
+            End if
+        End With
+    End Sub
 
-	Function update
-	    xmlhttp.open "HEAD", "http://cre.charterbn.com/autologin/cbsd/v1.5.zip", False
-			xmlhttp.send
-				Select Case Cint(xmlhttp.status)
-					Case 200, 202, 302
-						Set xmlhttp = Nothing
-						strbox = msgbox("Would you like to update?",4,"Update Available")
-							If strbox ="6" then
-								download
-							Else
-								Exit Function
-							End If
-					Case Else
-						Set xmlhttp = Nothing
-						Exit Function
-				End Select
-	End Function
+    Function check
+        sshpass = Passwd.value
+        temppass = Passwd.value
 
-	Function download
-		oshell.run "http://cre.charterbn.com/autologin/cbsd/archive/v1.5.zip"
-		close.window
-		msgbox "Please extract the update and replace the old version",,"v1.5 Downloading..."
-		Exit Function
-	End Function
-
-	Sub enter
-		With document.parentWindow.event
-			If .keycode = 13 then
-				check
-			Else
-				.cancelbubble = false
-				.returnvalue = true
-			End if
-		End With
-	End Sub
-
-	Function check
-		sshpass = Passwd.value
-		temppass = Passwd.value
-		
-		If Passwd.value = "" Then
-			msgbox "Please Enter your password in the space provided.", 48, "Error"
-			Exit Function
+        If Passwd.value = "" Then
+            msgbox "Please Enter your password in the space provided.", 48, "Error"
+            Exit Function
         End If
-		'replace characters that SendKeys uses as events with absolute characters
-		If InStr(Passwd.value,"^")>0 Then
-		    temppass=(Replace(Passwd.value,"^","{^}"))
+'replace characters that SendKeys uses as events with absolute characters
+        If InStr(Passwd.value,"^")>0 Then
+            temppass=(Replace(Passwd.value,"^","{^}"))
         End If
-		If InStr(temppass,"~")>0 Then
-		    temppass=(Replace(temppass,"~","{~}"))
+        If InStr(temppass,"~")>0 Then
+            temppass=(Replace(temppass,"~","{~}"))
         End If
-		If InStr(temppass,"+")>0 Then
-		    temppass=(Replace(temppass,"+","{+}"))
+        If InStr(temppass,"+")>0 Then
+            temppass=(Replace(temppass,"+","{+}"))
         End If
-		If InStr(temppass,"%")>0 Then
-		    temppass=(Replace(temppass,"%","{%}"))
+        If InStr(temppass,"%")>0 Then
+            temppass=(Replace(temppass,"%","{%}"))
         End If
-		
-		'trim empty spaces from user entry of IP Address
-		strIP = Trim(ipaddress.value)
-		aIP = Split(strIP, ".")
-			If Ubound(aIP) = 3 then
-				boolIsValid = True
-					For each x in aIP
-						If not isNumeric(x) then
-							boolIsValid = False
-								Message(wrong_ip)
-								Exit Function
-						End If
-					Next
+        If InStr(temppass,"(")>0 Then
+            temppass=(Replace(temppass,"(","{(}"))
+        End If
+        If InStr(temppass,")")>0 Then
+            temppass=(Replace(temppass,")","{)}"))
+        End If
 
-					For each x in aIP
-						If x < 0 Or x > 255 Then
-							boolIsValid = False
-								Message(wrong_ip)
-								Exit Function
-						End If
-					Next
-			Else
-				boolIsValid = False
-			End If
-	    
-		If boolIsValid = False Then
-			Message(wrong_ip)
-			Exit Function
+'trim tabs from ipaddress.value
+        strIPtab = Replace(ipaddress.value, vbTab, " ")
+'trim empty spaces from user entry of IP Address
+        strIP = Trim(strIPtab)
+        aIP = Split(strIP, ".")
+            If Ubound(aIP) = 3 then
+                boolIsValid = True
+                    For each x in aIP
+                        If not isNumeric(x) then
+                            boolIsValid = False
+                                Message(wrong_ip)
+                                Exit Function
+                        End If
+                    Next
+
+                    For each x in aIP
+                        If x < 0 Or x > 255 Then
+                            boolIsValid = False
+                                Message(wrong_ip)
+                                Exit Function
+                        End If
+                    Next
+            Else
+                boolIsValid = False
+            End If
+
+        If boolIsValid = False Then
+            Message(wrong_ip)
+            Exit Function
         End IF
 
-		Radio
-			Exit Function
+        Connect
+            Exit Function
     End Function
 
-	Sub Message(wrong_ip)
-		MsgBox " "&ipaddress.value&" is not a valid IP Address. Please Try again.", 48, "Error"
-		Exit Sub
-	End Sub
+    Sub Message(wrong_ip)
+        MsgBox " "&ipaddress.value&" is not a valid IP Address. Please Try again.", 48, "Error"
+        Exit Sub
+    End Sub
 
     Sub Delay
-		idTimer = window.setTimeout("PausedSection", 5000, "VBScript")
-		Exit Sub
-	End Sub
+        If ConnectionOption.Value ="telnet" Then
+            idTimer = window.setTimeout("PausedSection", 5000, "VBScript")
+            Exit Sub
+        ElseIf ConnectionOption.Value ="SSH" Then
+            idTimer = window.setTimeout("PausedSection", 6000, "VBScript")
+            Exit Sub
+        End If
+    End Sub
 
-	Sub PausedSection
-		end_it
-	End Sub
+    Sub PausedSection
+        end_it
+    End Sub
 
     Sub end_it
-		If OptionChooser.Value ="1" Then
-			end_telnet
-			Exit Sub
-		ElseIf OptionChooser.Value ="2" Then
-			end_ssh
-			Exit Sub
-		End If
-	End Sub
+        If ConnectionOption.Value ="telnet" Then
+            end_telnet
+            Exit Sub
+        ElseIf ConnectionOption.Value ="SSH" Then
+            end_ssh
+            Exit Sub
+        End If
+    End Sub
 
     Sub Window_onLoad
-		window.resizeTo 240,240
-		window.offscreenBuffering = True
-		Const ForReading = 1
-		If objFSO.FileExists("H:\HTA.ini") Then
-			Set objFile = objFSO.OpenTextFile("H:\HTA.ini", ForReading)
-				strContents = objFile.ReadAll
-				objFile.Close
-				arrContents = Split(strContents, ",")
-			window.moveTo arrContents(0), arrContents(1)
-		Else
-			objFSO.CreateTextFile("H:\HTA.ini")
-		End If
+        window.resizeTo 240,250
+        window.offscreenBuffering = True
+        Const ForReading = 1
+            document.body.text = FFFFFF
+            document.getElementById("hidden").style.color = FFFFFF
 
-		If not objFSO.FileExists("C:\PROGRA~1\PuTTY\putty.exe") Then
-			msgBox"PuTTY is not installed on your Computer. Please Install PuTTY from Control Panel, Run Advertised Programs", 48, "Error"
-			close.window
-		End If
-		update
+        Set objOption = Document.createElement("OPTION")
+        objOption.Text = "Login Only"
+        objOption.Value = "LO"
+        DeviceOption.Add(objOption)
+        Set objOption = Document.createElement("OPTION")
+        objOption.Text = "Cisco"
+        objOption.Value = "Cisco"
+        DeviceOption.Add(objOption)
+        Set objOption = Document.createElement("OPTION")
+        objOption.Text = "Alcatel Lucent"
+        objOption.Value = "ALU"
+        DeviceOption.Add(objOption)
+        Set objOption = Document.createElement("OPTION")
+        objOption.Text = "Telnet"
+        objOption.Value = "telnet"
+        ConnectionOption.Add(objOption)
+        Set objOption = Document.createElement("OPTION")
+        objOption.Text = "SSH"
+        objOption.Value = "SSH"
+        ConnectionOption.Add(objOption)
+        
+        If not objFSO.FileExists("C:\PROGRA~1\PuTTY\putty.exe") Then
+            msgBox "PuTTY is not installed on your Computer. Please Install PuTTY from Control Panel, Run Advertised Programs", 48, "Error"
+            close.window
+        End If
+
+        If not objFSO.FileExists(""&appdata&"") Then
+            objFSO.CreateTextFile(""&appdata&"")
+        Else
+            Set objFile = objFSO.OpenTextFile(""&appdata&"", ForReading)
+            strContents = objFile.ReadAll
+            objFile.Close
+            arrContents = Split(strContents, ",")
+            bColor = arrContents(0)
+            txColor = arrContents(1)
+            hColor = arrContents(2)
+            hMenu = arrContents(3) 
+            document.body.bgColor = ""&bColor&""
+            document.body.text = ""&txColor&""
+            document.getElementById("hidden").style.color = ""&txColor&""
+        End If
     End Sub
 
-	Sub Window_onBeforeUnLoad
-        intLeft = window.screenLeft
-        intTop = window.screenTop
-
+    Sub Window_onBeforeUnLoad
+        bgcolor = document.body.bgColor
+        txcolor = document.body.text
+        hcolor = document.getElementById("hidden").style.color
         Const ForWriting = 2
-        Set objFile = objFSO.OpenTextFile("H:\HTA.ini", ForWriting)
-			objFile.WriteLine intLeft & "," & intTop
-			objFile.Close
-		End Sub
+        Set objFile = objFSO.OpenTextFile(""&appdata&"", ForWriting)
+        objFile.WriteLine bgcolor & "," & txcolor & "," & hcolor & "," & hMenu
+        objFile.Close
+    End Sub
+
+    Function ConnectionOptionChange
+        interfaces.InnerHTML = ""
+        IF((DeviceOption.Value="Cisco") Or (DeviceOption.Value="ALU")) Then
+            strHTML = interfaces.InnerHTML
+            strHTML = strHTML &" <div style=" & Chr(34) & "position:absolute;top:155px;left;10px" & Chr(34) & ">CFP</div><div style=" & Chr(34) & "position:absolute;top:155px;right:45px;" & Chr(34) & ">HFP</div><div style=" & Chr(34) & "position:absolute;top:175px;" & Chr(34) & "><input type=" & Chr(34) & "text" & Chr(34) & " onkeypress=enter name=" & Chr(34) & "int1" & Chr(34) & " size=" & Chr(34) & "5" & Chr(34) & "></div><div style=" & Chr(34) & "position:absolute;top:200px;" & Chr(34) & ">Cisco: g0/1</div><div style=" & Chr(34) & "position:absolute;top:200px;right:20px;" & Chr(34) & ">ALU: 1/1/1</div><div style=" & Chr(34) & "position:absolute;right:20px;top:175px;" & Chr(34) & "><input type=" & Chr(34) & "text" & Chr(34) & " onkeypress=enter name=" & Chr(34) & "int2" & Chr(34) & " size=" & Chr(34) & "5" & Chr(34) & "><BR></div>"
+            interfaces.InnerHTML = strHTML
+            window.resizeTo 240,295
+        ElseIf DeviceOption.Value="LO" then
+            window.resizeTo 240,250
+        End If
+        
+    End Function
 
     Sub init_telnet
-		oshell.run "C:\PROGRA~1\PuTTY\putty.exe -telnet "&ipaddress.value&""
-		oshell.AppActivate(""&ipaddress.value&" - PuTTY")
-		Delay
+        oshell.run "C:\PROGRA~1\PuTTY\putty.exe -load NCE_script -telnet "&strIP&""
+        oshell.AppActivate(""&strIP&" - PuTTY")
+        Delay
     End Sub
 
-	Sub end_telnet
-		oshell.AppActivate(""&ipaddress.value&" - PuTTY")
-		oshell.sendkeys""&objNetwork.UserName&""
-		oshell.sendkeys"{ENTER}"
-		oshell.AppActivate(""&ipaddress.value&" - PuTTY")
-		oshell.AppActivate(""&ipaddress.value&" - PuTTY")
-		oshell.sendkeys""&temppass&""
-		oshell.AppActivate(""&ipaddress.value&" - PuTTY")
-		oshell.AppActivate(""&ipaddress.value&" - PuTTY")
-		oshell.sendkeys"{ENTER}"
-		commands
-	End Sub
+    Sub end_telnet
+        oshell.AppActivate(""&strIP&" - PuTTY")
+        oshell.AppActivate(""&strIP&" - PuTTY")
+        oshell.sendkeys""&objNetwork.UserName&"{ENTER}"&temppass&"{ENTER}"
+        commands
+    End Sub
 
-	Sub init_ssh
-		oshell.run "C:\PROGRA~1\PuTTY\putty.exe -ssh "&objNetwork.UserName&"@"&ipaddress.value&" -pw "&sshpass&""
-		Delay
-	End Sub
+    Sub init_ssh
+        oshell.run "C:\PROGRA~1\PuTTY\putty.exe -load NCE_script -ssh "&objNetwork.UserName&"@"&strIP&" -pw "&sshpass&""
+        Delay
+    End Sub
 
-	Sub end_ssh
-		commands
-	End Sub
+    Sub end_ssh
+        commands
+    End Sub
 
-    Function Radio
-		If RadioOption(0).Checked Then
-			device = RadioOption(0).Value
-		End If
-
-		If RadioOption(1).Checked Then
-			device = RadioOption(1).Value
-		End If
-
-		If RadioOption(2).Checked Then
-			device = RadioOption(2).Value
-		End If
-
-		If OptionChooser.Value ="1" Then
-			init_telnet
-			Exit Function
-		ElseIf OptionChooser.Value ="2" Then
-			init_ssh
-			Exit Function
-		End If
-	End Function
+    Function Connect
+        If ConnectionOption.Value ="telnet" Then
+            init_telnet
+            Exit Function
+        ElseIf ConnectionOption.Value ="SSH" Then
+            init_ssh
+            Exit Function
+        End If
+    End Function
 
     Function commands
-		If device = "none" Then
-			Exit Function
-		ElseIf device = "Cisco" Then
-			Cisco
-			Exit Function
-		ElseIf device = "ALU" Then
-			ALU
-			Exit Function
-		End if
+        If DeviceOption.Value = "LO" Then
+            Exit Function
+        ElseIf DeviceOption.Value = "Cisco" Then
+            Cisco
+            Exit Function
+        ElseIf DeviceOption.Value = "ALU" Then
+            ALU
+            Exit Function
+        End if
     End Function
 
     Sub Cisco
-		oshell.AppActivate(""&ipaddress.value&" - PuTTY")
-		oshell.sendkeys"sh run | i +(remote)-+(access)"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"sh run | i snmp-server location"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"sh run | i snmp-server community"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"sh run | i snmp-server view restricted"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"sh run | i access-list 52"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"sh ethernet cfm maintenance-points remote"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"sh ethernet cfm maintenance-points local"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"sh int desc | ex admin"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"sh cdp nei de | i Device ID:|IP address:|(outgoing port)"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"sh version | i Base"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"sh ip sla config"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys" "
-		oshell.sendkeys" "
-		oshell.sendkeys" "
+        oshell.AppActivate(""&strIP&" - PuTTY")
+        oshell.sendkeys"terminal length 0{ENTER}sh version | i Base{ENTER}sh snmp location{ENTER}sh ip access-lists +(remote)-+(access){ENTER}sh run | i snmp-server community{ENTER}sh run | i snmp-server view restricted{ENTER}sh ip access-list 52{ENTER}sh cdp nei de | i Device ID:|IP address:|(outgoing port){ENTER}sh policy-map{ENTER}sh class-map{ENTER}sh int desc | ex admin{ENTER}sh ethernet cfm maintenance-points remote{ENTER}sh ethernet cfm maintenance-points local{ENTER}sh ip sla config | i address{ENTER}"
+        If((int1.value = "" ) or (int2.value = "" )) Then
+        Exit Sub
+        End If
+        oshell.sendkeys"sh run int "&int1.value&"{ENTER}sh run int "&int2.value&"{ENTER}"
     End Sub
 
     Sub ALU
-		oshell.AppActivate(""&ipaddress.value&" - PuTTY")
-		oshell.sendkeys"show system security communities"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"show chassis | match Base"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"configure system security management-access-filter"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"info | match post-lines 11 ip-filter"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"exit"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"conf system"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"info | match post-lines 1 name"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"exit"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"conf service"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"info"
-		oshell.sendkeys" "
-		oshell.sendkeys" "
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"exit"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"show port description"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"conf eth-cfm"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"info"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"exit"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"conf qos"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys"info"
-		oshell.sendkeys"{ENTER}"
-		oshell.sendkeys" "
-		oshell.sendkeys" "
-		oshell.sendkeys" "
-		oshell.sendkeys"exit"
-		oshell.sendkeys"{ENTER}"
+        oshell.AppActivate(""&strIP&" - PuTTY")
+        oshell.sendkeys "environment terminal length 512{ENTER}conf system{ENTER}info | match post-lines 1 name{ENTER}exit{ENTER}show system security communities{ENTER}show chassis | match Base{ENTER}configure system security management-access-filter{ENTER}info | match post-lines 11 ip-filter{ENTER}exit{ENTER}conf qos{ENTER}info{ENTER} % %exit{ENTER}show port description{ENTER}conf service{ENTER}info{ENTER} % % exit{ENTER}conf eth-cfm{ENTER}info{ENTER}exit{ENTER}"
+        If((int1.value = "" ) or (int2.value = "" )) Then
+        Exit Sub
+        End If
+        oshell.sendkeys"conf port "&int1.value&"{ENTER}info{ENTER}exit{ENTER}conf port "&int2.value&"{ENTER}info{ENTER}exit{ENTER}"
     End Sub
+
+    Function colorchooser
+        if hMenu = 0 then
+        msgbox "The first pop-up will be for your background color.",,"You've found my hidden menu."
+        end if
+        intBG = dlgHelper.ChooseColorDlg
+                document.body.bgColor = intBG
+        if hMenu = 0 then
+        msgbox "The next pop-up will be for your text color.",,"You've found my hiddden menu."
+        hMenu = 1
+        end if
+        intTC = dlgHelper.ChooseColorDlg
+                document.body.text = intTC
+                document.getElementById("hidden").style.color = intTC
+    End Function
 
   </script>
 
 <body>
-<body bgcolor=#0174DF>
+
+Select device type or Login Only
+<BR>
+<select size="1" class="FixedWidth" name="DeviceOption" onchange="ConnectionOptionChange()">
+</select>
+<div style="position:absolute;right:10px;">
+<select size="1" class="FixedWidth" name="ConnectionOption" >
+</select>
+</div>
+<BR>
+<div style="position:absolute;top:60px;">
 IP Address to connect to<BR>
-<input type="text" onkeypress=enter onClick=cleartxt value="xxx.xxx.xxx.xxx" name="ipaddress" size="30"><BR>
-Active Directory Password<BR>
-<input type="password" onkeypress=enter name="Passwd" size="30"> <BR>
-<input type="radio" onkeypress=enter name="RadioOption" value="Cisco">Cisco
-<div style="position:relative;left:140px;top:-18px;"><select size="1" onkeypress=enter name="OptionChooser">
-<option value="1">Telnet</option>
-<option value="2">SSH</option>
-</select><BR></div>
-<div style="position:relative;left:0px;top:-20px;"><input type="radio" name="RadioOption" value="ALU">Alcatel Lucent<BR>
-<input type="radio" name="RadioOption" value="none" checked>Just Login<BR>
-<div style="position:relative;left:0px;top:5px;"><input type="button" value="Run Putty" name="run_button" onClick="check">
-<div style="position:relative;left:150px;top:-35px;"><BR>
-<font size="2">KAsp3rd</size>
+<input type="text" onkeypress=enter onClick=cleartxt value="xxx.xxx.xxx.xxx" name="ipaddress" size="30"></div>
+<BR>
+<div style="position:absolute;top:105px;">
+Active Directory Password
+<BR>
+<input type="password" onkeypress=enter name="Passwd" size="30"></div>
+<BR>
+<span id="interfaces">
+</span>
+<BR>
+<div style="position:absolute;bottom:5px;left:5px">
+<input type="button" value="Run Putty" name="run_button" onClick="check">
+<div style="position:absolute;bottom:0px;right:-130px;">
+<BR>
+<input id="hidden" type="button" value="KAsp3rd" style="background-color:transparent;border:0px;font-size:15px;color:black;" onclick="colorchooser">
+</size>
+<OBJECT id=dlgHelper CLASSID="clsid:3050f819-98b5-11cf-bb82-00aa00bdce0b" width="0px" height="0px"></OBJECT>
 </body>
+</html>
